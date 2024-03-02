@@ -88,7 +88,7 @@ function App() {
               <input
                 className={styles.Form_Submit}
                 type="submit"
-                value="book"
+                value="Reserve"
               />
             </form>
           </div>
