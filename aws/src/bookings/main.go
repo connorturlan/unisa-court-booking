@@ -15,6 +15,11 @@ const (
 	region string = "ap-southeast-2"
 )
 
+type Body struct {
+	Message string `json:"message"`
+	UUID string `json:"hash"`
+}
+
 func getClient() *dynamodb.DynamoDB {
 	config := aws.NewConfig().WithRegion(region)
 
@@ -48,8 +53,15 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 		}, err
 	}
 
+	maybeHash := result.Item["uuid"]
+
+	body := Body{
+		Message: "success",
+		UUID: *maybeHash.S,
+	}
+
 	return events.APIGatewayProxyResponse{
-		Body:       fmt.Sprintf("%s\n", result),
+		Body:       fmt.Sprintf("%s\n", body),
 		StatusCode: 200,
 	}, nil
 }
