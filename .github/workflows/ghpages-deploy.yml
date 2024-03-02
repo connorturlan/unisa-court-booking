@@ -1,12 +1,12 @@
 name: ghpages build and deploy
 
 on:
-  - workflow_dispatch
-  - push:
-      branches:
-        - main
-      paths:
-        - "react"
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "react"
 
 jobs:
   build:
