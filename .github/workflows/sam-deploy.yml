@@ -41,4 +41,4 @@ jobs:
       # sam deploy
       - name: deploy
         run: |
-          sam deploy --stackname unisa-court-booking
+          sam deploy --stack-name unisa-court-booking
