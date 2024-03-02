@@ -19,8 +19,7 @@ function App() {
         <h1>Court Booking</h1>
         <form onSubmit={onSubmit}>
           <RadioCard group={1} value={1}>
-            Hello <br />
-            World
+            <p>Date 2</p>
           </RadioCard>
 
           <RadioCard group={1} value={2}>

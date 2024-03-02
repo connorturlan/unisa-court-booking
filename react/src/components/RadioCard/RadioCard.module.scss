@@ -12,10 +12,13 @@
 }
 
 .RadioCard_Content {
-  width: 100%;
-  height: 100%;
+  display: flex;
+  height: auto;
 
+  margin: 0;
   padding: 4px;
+  margin: auto;
+
   border-radius: 4px;
 }
 
