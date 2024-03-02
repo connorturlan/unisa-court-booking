@@ -9,6 +9,7 @@ on:
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
@@ -19,14 +20,14 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-southeast-2
 
-      # sam build 
+      # sam build
       - run: |
-        cd ./aws
-        sam build
+          cd ./aws
+          sam build
 
-      # Run Unit tests- Specify unit tests here 
+      # Run Unit tests- Specify unit tests here
 
       # sam deploy
       - run: |
-        cd ./aws
-        sam deploy
+          cd ./aws
+          sam deploy
