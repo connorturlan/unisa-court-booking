@@ -41,4 +41,5 @@ jobs:
       # sam deploy
       - name: deploy
         run: |
+          cd ./aws
           sam deploy --stack-name unisa-court-booking
