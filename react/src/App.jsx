@@ -30,8 +30,9 @@ function App() {
           {sessionGroup.map((dateObject, dateId) => {
             const date = dateObject["Date"];
             const details = dateObject["Details"] || date;
+            const stock = dateObject["Available"] || "-1";
 
-            if (!date || !details) {
+            if (!date || !details || !stock) {
               return <p>error</p>;
             }
 
@@ -39,6 +40,7 @@ function App() {
               <RadioCard key={dateId} group={group} value={date}>
                 <DateCard title={date}>
                   <p>{details}</p>
+                  <p>Available: {stock}</p>
                 </DateCard>
               </RadioCard>
             );
@@ -91,6 +93,7 @@ function App() {
                 value="Reserve"
               />
             </form>
+            <img className={styles.Info_Unisa} src="unisaSport.png" alt="" />
           </div>
         </div>
       </div>

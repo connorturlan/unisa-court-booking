@@ -50,6 +50,12 @@
 
   width: 600px;
   padding: 16px;
+
+  &_Unisa {
+    height: 80px;
+    padding: 16px;
+    margin: auto;
+  }
 }
 
 .Form {
@@ -92,11 +98,19 @@
     border-radius: 8px;
     box-shadow: 2px 2px 4px 0px rgba(0, 0, 0, 0.2),
       -2px -2px 4px 0px rgba(0, 0, 0, 0.2);
+
+    & > * {
+      border-right: 1px solid #222;
+    }
+    & > *:last-child {
+      border-right: none;
+    }
   }
 
   &_Email {
     display: grid;
-    grid-template-columns: 80px 1fr;
+    grid-template-columns: auto 1fr;
+    gap: 12px;
 
     width: 300px;
 
@@ -104,6 +118,6 @@
   }
 
   &_Submit {
-    width: 200px;
+    width: 300px;
   }
 }
