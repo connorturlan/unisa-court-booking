@@ -1,6 +1,7 @@
 import { useState } from "react";
 import styles from "./App.module.scss";
 import RadioCard from "./components/RadioCard/RadioCard";
+import DateCard from "./components/DateCard/DateCard";
 
 function App() {
   const [count, setCount] = useState(0);
@@ -19,11 +20,11 @@ function App() {
         <h1>Court Booking</h1>
         <form onSubmit={onSubmit}>
           <RadioCard group={1} value={1}>
-            <p>Date 2</p>
+            <DateCard title="Date 1">details about date one</DateCard>
           </RadioCard>
 
           <RadioCard group={1} value={2}>
-            <p>Date 2</p>
+            <DateCard title="Date 2">details about date two</DateCard>
           </RadioCard>
 
           <input type="submit" value="book" />
