@@ -6,7 +6,7 @@ on:
     branches:
       - main
     paths:
-      - aws
+      - aws/**
 
 jobs:
   build-deploy:
