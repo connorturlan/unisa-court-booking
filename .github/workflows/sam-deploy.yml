@@ -2,9 +2,10 @@ name: AWS SAM build and deploy
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
     paths:
-      - "./aws"
+      - "aws"
 
 jobs:
   build-deploy:
