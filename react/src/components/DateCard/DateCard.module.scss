@@ -1,6 +1,6 @@
 .DateCard {
   display: grid;
-  grid-template: 36px 1fr / 1fr;
+  grid-template-rows: 1fr 1.5fr;
 
   padding: 4px;
 
@@ -11,8 +11,15 @@
   }
 
   &_Content {
+    display: flex;
+    flex-direction: column;
     height: 100%;
 
     margin: 0;
+
+    & * {
+      padding: 4px;
+      margin: 0;
+    }
   }
 }
