@@ -42,4 +42,4 @@ jobs:
       - name: deploy
         run: |
           cd ./aws
-          sam deploy
+          sam deploy --no-execute-changeset
