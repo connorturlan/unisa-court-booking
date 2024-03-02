@@ -36,9 +36,14 @@ function App() {
               return <p>error</p>;
             }
 
+            const dateTime = new Date(date);
+            const dateString = `${dateTime.toLocaleDateString("en-au", {
+              weekday: "short",
+            })} ${dateTime.toLocaleDateString()}`;
+
             return (
               <RadioCard key={dateId} group={group} value={date}>
-                <DateCard title={date}>
+                <DateCard title={dateString}>
                   <p>{details}</p>
                   <p>Available: {stock}</p>
                 </DateCard>

@@ -38,7 +38,7 @@
   padding: 8px;
   border: 2px solid blue;
   border-radius: 8px;
-  margin: 40px auto;
+  margin: 40px auto 160px auto;
   box-shadow: 16px 16px 32px 0px rgba(0, 0, 0, 0.4);
 }
 
@@ -49,6 +49,9 @@
   align-items: center;
 
   width: 600px;
+  @include devices.phone {
+    width: 80vw;
+  }
   padding: 16px;
 
   &_Unisa {
@@ -88,6 +91,9 @@
 
   &_Date {
     width: 600px;
+    @include devices.phone {
+      width: 80vw;
+    }
 
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -113,11 +119,17 @@
     gap: 12px;
 
     width: 300px;
+    @include devices.phone {
+      width: 80%;
+    }
 
     padding: 4px;
   }
 
   &_Submit {
     width: 300px;
+    @include devices.phone {
+      width: 80%;
+    }
   }
 }
