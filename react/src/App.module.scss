@@ -1,20 +1,109 @@
+@use "./styles/partials/devices";
+
 .App {
   width: 100vw;
   height: 100vh;
 
   display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background-image: url("/bgHorizontal.jpg");
+  @include devices.phone {
+    background-image: url("/bgVertical.jpg");
+  }
+  background-repeat: no-repeat;
+  background-size: cover;
+
+  overflow-y: scroll;
+
+  &_Container {
+    height: 100%;
+    width: 100%;
+  }
+}
+
+.Container {
+  display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
 
-  & form {
+  width: fit-content;
+  height: fit-content;
+
+  background-color: #fff;
+  color: #222;
+
+  padding: 8px;
+  border: 2px solid blue;
+  border-radius: 8px;
+  margin: 40px auto;
+  box-shadow: 16px 16px 32px 0px rgba(0, 0, 0, 0.4);
+}
+
+.Info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  width: 600px;
+  padding: 16px;
+}
+
+.Form {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  // padding: 8px;
+  // border-radius: 8px;
+  gap: 8px;
+
+  &_Sections {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    padding: 12px;
+    border-radius: 8px;
+    gap: 8px;
+    box-shadow: inset 4px 4px 4px 0px rgba(0, 0, 0, 0.2),
+      inset -4px -4px 4px 0px rgba(0, 0, 0, 0.2);
+
+    background-color: #cacaca;
+    & > * {
+      background-color: #fff;
+    }
+  }
+
+  &_Date {
+    width: 600px;
+
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+
     padding: 4px;
+    border: 1px solid #222;
+    border-radius: 8px;
+    box-shadow: 2px 2px 4px 0px rgba(0, 0, 0, 0.2),
+      -2px -2px 4px 0px rgba(0, 0, 0, 0.2);
+  }
 
-    border: 1px solid white;
-    border-radius: 4px;
+  &_Email {
+    display: grid;
+    grid-template-columns: 80px 1fr;
 
-    gap: 12px;
+    width: 300px;
+
+    padding: 4px;
+  }
+
+  &_Submit {
+    width: 200px;
   }
 }

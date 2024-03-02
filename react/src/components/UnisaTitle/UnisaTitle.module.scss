@@ -1,0 +1,33 @@
+@use "../../styles/partials/devices";
+
+.UnisaTitle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+
+  @include devices.phone {
+    grid-template-columns: 1fr;
+  }
+
+  gap: 20px;
+  padding: 8px;
+  & > * {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &_Title {
+    font-size: 24pt;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  &_Image {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+
+  &_Goats {
+    width: 10rem;
+  }
+}

@@ -1,1 +1,18 @@
-.DateCard {}
+.DateCard {
+  display: grid;
+  grid-template: 36px 1fr / 1fr;
+
+  padding: 4px;
+
+  &_Title {
+    height: 100%;
+
+    margin: 0;
+  }
+
+  &_Content {
+    height: 100%;
+
+    margin: 0;
+  }
+}
