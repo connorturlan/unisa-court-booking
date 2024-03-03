@@ -17,7 +17,7 @@ const (
 
 type Body struct {
 	Message string `json:"message"`
-	UUID string `json:"hash"`
+	UUID    string `json:"hash"`
 }
 
 func getClient() *dynamodb.DynamoDB {
@@ -57,11 +57,11 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 
 	body := Body{
 		Message: "success",
-		UUID: *maybeHash.S,
+		UUID:    *maybeHash.S,
 	}
 
 	return events.APIGatewayProxyResponse{
-		Body:       fmt.Sprintf("%s\n", body),
+		Body:       fmt.Sprintf("booking: %s\n", body),
 		StatusCode: 200,
 	}, nil
 }
