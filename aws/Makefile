@@ -4,7 +4,7 @@ build:
 	sam build
 	
 deploy: build
-	sam deploy 
+	sam deploy --no-execute-changeset
 
 local: build up
 	sam local start-api -n env.json --warm-containers eager --docker-network lambda-local

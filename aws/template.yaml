@@ -25,7 +25,7 @@ Resources:
       Architectures:
         - x86_64
       Events:
-        CatchAll:
+        BookingEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
             Path: /booking
@@ -43,7 +43,7 @@ Resources:
       Architectures:
         - x86_64
       Events:
-        CatchAll:
+        SessionEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
             Path: /sessions
@@ -51,6 +51,20 @@ Resources:
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
           LOCAL: false
+
+  # CourtBookingFunctionIamRole:
+  #   AssumeRolePolicyDocument:
+  #     Statement:
+  #       - Action: sts:AssumeRole
+  #         Effect: Allow
+  #         Principal:
+  #           Service: lambda.amazonaws.com
+  #     Version: "2012-10-17"
+  #   Description: ""
+  #   MaxSessionDuration: 3600
+  #   Path: /
+  #   RoleId: AROAUMEJG2P3IJV5BQIJO
+  #   RoleName: unisa-court-booking-CourtSessionsFunctionRole-qxodNb2Gxz1y
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
