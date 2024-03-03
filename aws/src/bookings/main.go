@@ -12,7 +12,8 @@ import (
 )
 
 const (
-	region string = "ap-southeast-2"
+	region    string = "ap-southeast-2"
+	tableName string = "unisa-booking-register"
 )
 
 type Body struct {

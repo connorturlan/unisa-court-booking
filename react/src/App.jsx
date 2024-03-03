@@ -1,21 +1,22 @@
 import styles from "./App.module.scss";
 import RadioCard from "./components/RadioCard/RadioCard";
 import DateCard from "./components/DateCard/DateCard";
-import sessionsJson from "./assets/sessions.json";
 import UnisaTitle from "./components/UnisaTitle/UnisaTitle";
 import { useEffect, useState } from "react";
 
 function App() {
   const [sessionsJson, setSessionsJson] = useState({});
-  const [sessionsHtml, setSessionsHtml] = useState(<p>loading...</p>);
+  const [sessionsHtml, setSessionsHtml] = useState({});
 
   const [isLoading, setLoadingState] = useState(true);
 
   const sendSessionRequest = async () => {
-    const jsonBody = await fetch(
+    const res = await fetch(
       "https://4wcagmhkc0.execute-api.ap-southeast-2.amazonaws.com/Prod/sessions",
       { headers: { Accept: "application/json" } }
-    ).json();
+    );
+
+    const jsonBody = await res.json();
 
     setSessionsJson(jsonBody);
   };
@@ -107,7 +108,13 @@ function App() {
               </p>
             </div>
             <form onSubmit={onSubmit} className={styles.Form}>
-              <div className={styles.Form_Sections}>{sessionsHtml}</div>
+              <div className={styles.Form_Sections}>
+                {isLoading ? (
+                  <h2 className={styles.Form_Sections}>Loading...</h2>
+                ) : (
+                  sessionsHtml
+                )}
+              </div>
 
               <section className={styles.Form_Email}>
                 <label htmlFor="email">Email: </label>
