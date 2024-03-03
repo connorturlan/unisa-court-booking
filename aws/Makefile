@@ -1,10 +1,10 @@
 .PHONY: build
 
 build:
-	sam build
+	sam build --use-container
 	
 deploy: build
-	sam deploy --no-execute-changeset
+	sam deploy --no-confirm-changeset --no-fail-on-empty-changeset
 
 local: build up
 	sam local start-api -n env.json --warm-containers eager --docker-network lambda-local

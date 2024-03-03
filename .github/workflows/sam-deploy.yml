@@ -31,15 +31,12 @@ jobs:
           aws-region: ap-southeast-2
 
       # sam build
-      - name: build
-        run: |
+      - run: |
           cd ./aws
-          sam build
+          sam build --use-container
 
       # Run Unit tests- Specify unit tests here
 
       # sam deploy
-      - name: deploy
-        run: |
-          cd ./aws
-          sam deploy --no-execute-changeset
+      - run: |
+          sam deploy --no-execute-changeset  --no-confirm-changeset --no-fail-on-empty-changeset

@@ -3,8 +3,23 @@ import RadioCard from "./components/RadioCard/RadioCard";
 import DateCard from "./components/DateCard/DateCard";
 import sessionsJson from "./assets/sessions.json";
 import UnisaTitle from "./components/UnisaTitle/UnisaTitle";
+import { useEffect, useState } from "react";
 
 function App() {
+  const [sessionsJson, setSessionsJson] = useState({});
+  const [sessionsHtml, setSessionsHtml] = useState(<p>loading...</p>);
+
+  const [isLoading, setLoadingState] = useState(true);
+
+  const sendSessionRequest = async () => {
+    const jsonBody = await fetch(
+      "https://4wcagmhkc0.execute-api.ap-southeast-2.amazonaws.com/Prod/sessions",
+      { headers: { Accept: "application/json" } }
+    ).json();
+
+    setSessionsJson(jsonBody);
+  };
+
   const onSubmit = (event) => {
     event.preventDefault();
 
@@ -57,7 +72,14 @@ function App() {
     return elements;
   };
 
-  const sessionElements = parseSessionData(sessionsJson);
+  useEffect(() => {
+    sendSessionRequest();
+  }, []);
+
+  useEffect(() => {
+    setSessionsHtml(parseSessionData(sessionsJson));
+    setLoadingState(false);
+  }, [sessionsJson]);
 
   return (
     <>
@@ -85,7 +107,7 @@ function App() {
               </p>
             </div>
             <form onSubmit={onSubmit} className={styles.Form}>
-              <div className={styles.Form_Sections}>{sessionElements}</div>
+              <div className={styles.Form_Sections}>{sessionsHtml}</div>
 
               <section className={styles.Form_Email}>
                 <label htmlFor="email">Email: </label>
