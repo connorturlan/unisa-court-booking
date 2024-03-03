@@ -20,6 +20,7 @@ body {
 }
 
 input[type="text"],
+input[type="email"],
 button,
 input[type="submit"] {
   padding: 4px;

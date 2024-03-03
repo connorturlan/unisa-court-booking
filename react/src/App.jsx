@@ -3,12 +3,14 @@ import RadioCard from "./components/RadioCard/RadioCard";
 import DateCard from "./components/DateCard/DateCard";
 import UnisaTitle from "./components/UnisaTitle/UnisaTitle";
 import { useEffect, useState } from "react";
+import { getCookie, setCookie } from "./utils/cookies";
 
 function App() {
   const [sessionsJson, setSessionsJson] = useState({});
   const [sessionsHtml, setSessionsHtml] = useState({});
 
   const [isLoading, setLoadingState] = useState(true);
+  const [hidden, setHidden] = useState(getCookie("isHidden") == "true");
 
   const sendSessionRequest = async () => {
     const res = await fetch(
@@ -21,12 +23,51 @@ function App() {
     setSessionsJson(jsonBody);
   };
 
+  const sendBookingReservation = async (event, formData) => {
+    const data = Array.from(formData.keys()).map((key) => {
+      const value = formData.get(key);
+      return `${key}-${value}`;
+    });
+    data.pop();
+
+    const email = formData.get("email");
+    console.log("data:", email, data);
+
+    if (email == "") {
+      window.alert("Missing email.");
+      return;
+    }
+
+    const body = {
+      uid: email,
+      sessions: data,
+    };
+
+    const bodyJson = JSON.stringify(body);
+
+    const res = await fetch(
+      "https://4wcagmhkc0.execute-api.ap-southeast-2.amazonaws.com/Prod/booking",
+      {
+        method: "POST",
+        headers: { Accept: "application/json" },
+        body: bodyJson,
+      }
+    );
+
+    if (res.status != 202) {
+      window.alert(res.status);
+    }
+    event.target.reset();
+    window.alert("Your booking has been submitted!");
+
+    setHidden(true);
+    setCookie("isHidden", "true", 7);
+  };
+
   const onSubmit = (event) => {
     event.preventDefault();
-
     const formData = new FormData(event.target);
-
-    console.log(formData.get("1"));
+    sendBookingReservation(event, formData);
   };
 
   const parseSessionData = (json) => {
@@ -58,7 +99,7 @@ function App() {
             })} ${dateTime.toLocaleDateString()}`;
 
             return (
-              <RadioCard key={dateId} group={group} value={date}>
+              <RadioCard key={dateId} group={group} value={dateId}>
                 <DateCard title={dateString}>
                   <p>{details}</p>
                   <p>Available: {stock}</p>
@@ -106,29 +147,26 @@ function App() {
                   any time, with the risk that there may not be availablity.
                 </i>
               </p>
-              <h3 className={styles.Info_Notice}>
+              <h3 className={styles.Info_Notice} hidden>
                 Booking is currently closed until Monday 4th
               </h3>
             </div>
-            <form onSubmit={onSubmit} className={styles.Form} disabled>
+            <form onSubmit={onSubmit} className={styles.Form}>
               <div className={styles.Form_Sections}>
                 {isLoading ? (
                   <h2 className={styles.Form_Sections}>Loading...</h2>
                 ) : (
-                  sessionsHtml
+                  <>{sessionsHtml}</>
                 )}
               </div>
-
               <section className={styles.Form_Email}>
                 <label htmlFor="email">Email: </label>
-                <input type="text" name="email" id="email" />
+                <input type="email" name="email" id="email" />
               </section>
-
               <input
                 className={styles.Form_Submit}
                 type="submit"
                 value="Reserve"
-                disabled
               />
             </form>
             <img className={styles.Info_Unisa} src="unisaSport.png" alt="" />
