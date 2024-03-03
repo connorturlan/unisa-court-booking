@@ -3,6 +3,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"strconv"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -15,6 +17,7 @@ import (
 const (
 	region    string = "ap-southeast-2"
 	tableName string = "unisa-booking-sessions"
+	indexName string = "GroupIndex"
 )
 
 type Body struct {
@@ -50,27 +53,45 @@ func createTable(client *dynamodb.DynamoDB) error {
 		TableName: aws.String(tableName),
 		AttributeDefinitions: []*dynamodb.AttributeDefinition{
 			{
-				AttributeName: aws.String("uuid"),
+				AttributeName: aws.String("uid"),
 				AttributeType: aws.String("S"),
 			},
 			{
-				AttributeName: aws.String("group"),
+				AttributeName: aws.String("groupIndex"),
 				AttributeType: aws.String("S"),
 			},
 		},
 		KeySchema: []*dynamodb.KeySchemaElement{
 			{
-				AttributeName: aws.String("uuid"),
+				AttributeName: aws.String("uid"),
 				KeyType:       aws.String("HASH"),
 			},
 			{
-				AttributeName: aws.String("group"),
+				AttributeName: aws.String("groupIndex"),
 				KeyType:       aws.String("RANGE"),
 			},
 		},
 		ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
 			ReadCapacityUnits:  aws.Int64(1),
 			WriteCapacityUnits: aws.Int64(1),
+		},
+		GlobalSecondaryIndexes: []*dynamodb.GlobalSecondaryIndex{
+			{
+				IndexName: aws.String("GroupIndex"),
+				KeySchema: []*dynamodb.KeySchemaElement{
+					{
+						AttributeName: aws.String("groupIndex"),
+						KeyType:       aws.String("HASH"),
+					},
+				},
+				Projection: &dynamodb.Projection{
+					ProjectionType: aws.String("ALL"),
+				},
+				ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+					ReadCapacityUnits:  aws.Int64(1),
+					WriteCapacityUnits: aws.Int64(1),
+				},
+			},
 		},
 	})
 
@@ -145,11 +166,11 @@ func setSessions(client *dynamodb.DynamoDB) (Sessions, error) {
 			_, err := client.PutItem(&dynamodb.PutItemInput{
 				TableName: aws.String(tableName),
 				Item: map[string]*dynamodb.AttributeValue{
-					"uuid":      {S: aws.String(id)},
-					"group":     {S: aws.String(fmt.Sprintf("%d", groupIndex))},
-					"date":      {S: aws.String(session.Date)},
-					"details":   {S: aws.String(session.Details)},
-					"available": {N: aws.String(fmt.Sprintf("%d", session.Available))},
+					"uid":        {S: aws.String(id)},
+					"groupIndex": {S: aws.String(fmt.Sprintf("%d", groupIndex))},
+					"dateString": {S: aws.String(session.Date)},
+					"details":    {S: aws.String(session.Details)},
+					"available":  {N: aws.String(fmt.Sprintf("%d", session.Available))},
 				},
 			})
 			if err != nil {
@@ -161,10 +182,112 @@ func setSessions(client *dynamodb.DynamoDB) (Sessions, error) {
 	return sessions, nil
 }
 
-func getSessions(client *dynamodb.DynamoDB) (Sessions, error) { return Sessions{}, nil }
+func getSessions(client *dynamodb.DynamoDB) (Sessions, error) {
+	sessions := Sessions{}
 
-func handleCors() {}
-func handleGet()  {}
+	groupIndex := 0
+	for {
+		output, err := client.Query(&dynamodb.QueryInput{
+			TableName:              aws.String(tableName),
+			IndexName:              aws.String(indexName),
+			KeyConditionExpression: aws.String("groupIndex = :groupIndex"),
+			ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+				":groupIndex": {S: aws.String(fmt.Sprintf("%d", groupIndex))},
+			},
+		})
+		if err != nil {
+			return Sessions{}, err
+		}
+
+		if *output.Count <= 0 {
+			break
+		}
+
+		group := SessionGroup{}
+		for _, sessionData := range output.Items {
+			maybeDate, ok := sessionData["dateString"]
+			if !ok {
+				return Sessions{}, nil
+			}
+			date := *maybeDate.S
+
+			maybeDetails, ok := sessionData["details"]
+			if !ok {
+				return Sessions{}, nil
+			}
+			details := *maybeDetails.S
+
+			maybeAvailable, ok := sessionData["available"]
+			if !ok {
+				return Sessions{}, nil
+			}
+
+			available, err := strconv.Atoi(*maybeAvailable.N)
+			if err != nil {
+				return Sessions{}, err
+			}
+
+			session := Session{
+				Date:      date,
+				Details:   details,
+				Available: available,
+			}
+
+			group = append(group, session)
+		}
+		sessions.Groups = append(sessions.Groups, group)
+
+		groupIndex += 1
+	}
+
+	return sessions, nil
+}
+
+func handleCors(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	return events.APIGatewayProxyResponse{
+		StatusCode: 200,
+		Headers: map[string]string{
+			"Access-Control-Allow-Headers": "*",
+			"Access-Control-Allow-Origin":  "*",
+			"Access-Control-Allow-Methods": "OPTIONS,GET,POST",
+		},
+	}, nil
+}
+
+func handleGet(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	// create the dynamo client.
+	client := getClient()
+
+	// create the table.
+	// err := createTable(client)
+	// if err != nil {
+	// 	return respondWithStdErr(err)
+	// }
+
+	// set the session data.
+	// sessions, err := setSessions(client)
+	// if err != nil {
+	// 	return respondWithStdErr(err)
+	// }
+
+	// get the session data.
+	sessions, err := getSessions(client)
+	if err != nil {
+		return respondWithStdErr(err)
+	}
+
+	// marshall the session ready to send.
+	sessionJson, err := json.Marshal(sessions)
+	if err != nil {
+		return respondWithStdErr(err)
+	}
+
+	// return.
+	return events.APIGatewayProxyResponse{
+		Body:       string(sessionJson),
+		StatusCode: 200,
+	}, nil
+}
 
 func respondWithStdErr(err error) (events.APIGatewayProxyResponse, error) {
 	return events.APIGatewayProxyResponse{
@@ -174,29 +297,16 @@ func respondWithStdErr(err error) (events.APIGatewayProxyResponse, error) {
 }
 
 func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	client := getClient()
-
-	// create the table.
-	// err := createTable(client)
-	// if err != nil {
-	// 	return respondWithStdErr(err)
-	// }
-
-	sessions, err := setSessions(client)
-	if err != nil {
-		return respondWithStdErr(err)
+	switch request.HTTPMethod {
+	case http.MethodOptions:
+		return handleCors(request)
+	case http.MethodGet:
+		return handleGet(request)
+	default:
+		return events.APIGatewayProxyResponse{
+			StatusCode: 400,
+		}, nil
 	}
-
-	fmt.Println(sessions)
-	sessionJson, err := json.Marshal(sessions)
-	if err != nil {
-		return respondWithStdErr(err)
-	}
-
-	return events.APIGatewayProxyResponse{
-		Body:       string(sessionJson),
-		StatusCode: 201,
-	}, nil
 }
 
 func main() {
