@@ -1,7 +1,7 @@
 .PHONY: build
 
 build:
-	sam build --use-container
+	sam build
 	
 deploy: build
 	sam deploy --no-confirm-changeset --no-fail-on-empty-changeset

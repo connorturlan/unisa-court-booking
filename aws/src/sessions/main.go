@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"slices"
 	"strconv"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -98,7 +99,19 @@ func createTable(client *dynamodb.DynamoDB) error {
 	return err
 }
 
-func checkTableExists() bool { return false }
+func checkTableExists(client *dynamodb.DynamoDB) bool {
+	awsTables, err := client.ListTables(&dynamodb.ListTablesInput{})
+	if err != nil {
+		return false
+	}
+
+	tables := []string{}
+	for _, table := range awsTables.TableNames {
+		tables = append(tables, *table)
+	}
+
+	return slices.Contains(tables, tableName)
+}
 
 func setSessions(client *dynamodb.DynamoDB) (Sessions, error) {
 	wedsDetails := "Casual games at 15 minute intervals."
@@ -258,10 +271,9 @@ func handleGet(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRes
 	// create the dynamo client.
 	client := getClient()
 
-	// create the table.
-	// err := createTable(client)
-	// if err != nil {
-	// 	return respondWithStdErr(err)
+	// validate the table exists.
+	// if !checkTableExists(client) {
+	// 	createTable(client)
 	// }
 
 	// set the session data.
