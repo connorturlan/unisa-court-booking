@@ -33,9 +33,10 @@ type Sessions struct {
 type SessionGroup []Session
 
 type Session struct {
-	Date      string `json:"Date"`
-	Details   string `json:"Details"`
-	Available int    `json:"Available"`
+	Date           string `json:"Date"`
+	Details        string `json:"Details"`
+	TotalAvailable int    `json:"TotalAvailable"`
+	Available      int    `json:"Available"`
 }
 
 func getClient() *dynamodb.DynamoDB {
@@ -122,50 +123,58 @@ func setSessions(client *dynamodb.DynamoDB) (Sessions, error) {
 		Groups: []SessionGroup{
 			{
 				{
-					Date:      "2024-03-06",
-					Details:   wedsDetails,
-					Available: 60,
+					Date:           "2024-03-06",
+					Details:        wedsDetails,
+					TotalAvailable: 60,
+					Available:      60,
 				},
 				{
-					Date:      "2024-03-07",
-					Details:   thursDetails,
-					Available: 60,
-				},
-			},
-			{
-				{
-					Date:      "2024-03-13",
-					Details:   wedsDetails,
-					Available: 60,
-				},
-				{
-					Date:      "2024-03-14",
-					Details:   thursDetails,
-					Available: 60,
+					Date:           "2024-03-07",
+					Details:        thursDetails,
+					TotalAvailable: 60,
+					Available:      60,
 				},
 			},
 			{
 				{
-					Date:      "2024-03-20",
-					Details:   wedsDetails,
-					Available: 60,
+					Date:           "2024-03-13",
+					Details:        wedsDetails,
+					TotalAvailable: 60,
+					Available:      60,
 				},
 				{
-					Date:      "2024-03-21",
-					Details:   thursDetails,
-					Available: 60,
+					Date:           "2024-03-14",
+					Details:        thursDetails,
+					TotalAvailable: 60,
+					Available:      60,
 				},
 			},
 			{
 				{
-					Date:      "2024-03-27",
-					Details:   wedsDetails,
-					Available: 60,
+					Date:           "2024-03-20",
+					Details:        wedsDetails,
+					TotalAvailable: 60,
+					Available:      60,
 				},
 				{
-					Date:      "2024-03-28",
-					Details:   thursDetails,
-					Available: 60,
+					Date:           "2024-03-21",
+					Details:        thursDetails,
+					TotalAvailable: 60,
+					Available:      60,
+				},
+			},
+			{
+				{
+					Date:           "2024-03-27",
+					Details:        wedsDetails,
+					TotalAvailable: 60,
+					Available:      60,
+				},
+				{
+					Date:           "2024-03-28",
+					Details:        thursDetails,
+					TotalAvailable: 60,
+					Available:      60,
 				},
 			},
 		},
@@ -179,11 +188,12 @@ func setSessions(client *dynamodb.DynamoDB) (Sessions, error) {
 			_, err := client.PutItem(&dynamodb.PutItemInput{
 				TableName: aws.String(tableName),
 				Item: map[string]*dynamodb.AttributeValue{
-					"uid":        {S: aws.String(id)},
-					"groupIndex": {S: aws.String(fmt.Sprintf("%d", groupIndex))},
-					"dateString": {S: aws.String(session.Date)},
-					"details":    {S: aws.String(session.Details)},
-					"available":  {N: aws.String(fmt.Sprintf("%d", session.Available))},
+					"uid":            {S: aws.String(id)},
+					"groupIndex":     {S: aws.String(fmt.Sprintf("%d", groupIndex))},
+					"dateString":     {S: aws.String(session.Date)},
+					"details":        {S: aws.String(session.Details)},
+					"totalAvailable": {N: aws.String(fmt.Sprintf("%d", session.TotalAvailable))},
+					"available":      {N: aws.String(fmt.Sprintf("%d", session.Available))},
 				},
 			})
 			if err != nil {
@@ -240,10 +250,21 @@ func getSessions(client *dynamodb.DynamoDB) (Sessions, error) {
 				return Sessions{}, err
 			}
 
+			maybeTotalAvailable, ok := sessionData["totalAvailable"]
+			if !ok {
+				return Sessions{}, nil
+			}
+
+			totalAvailable, err := strconv.Atoi(*maybeTotalAvailable.N)
+			if err != nil {
+				return Sessions{}, err
+			}
+
 			session := Session{
-				Date:      date,
-				Details:   details,
-				Available: available,
+				Date:           date,
+				Details:        details,
+				TotalAvailable: totalAvailable,
+				Available:      available,
 			}
 
 			group = append(group, session)
@@ -267,20 +288,42 @@ func handleCors(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRe
 	}, nil
 }
 
-func handleGet(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func handlePost(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	// create the dynamo client.
 	client := getClient()
 
 	// validate the table exists.
-	// if !checkTableExists(client) {
-	// 	createTable(client)
-	// }
+	if !checkTableExists(client) {
+		createTable(client)
+	}
 
 	// set the session data.
-	// sessions, err := setSessions(client)
-	// if err != nil {
-	// 	return respondWithStdErr(err)
-	// }
+	sessions, err := setSessions(client)
+	if err != nil {
+		return respondWithStdErr(err)
+	}
+
+	// marshall the session ready to send.
+	sessionJson, err := json.Marshal(sessions)
+	if err != nil {
+		return respondWithStdErr(err)
+	}
+
+	// return.
+	return events.APIGatewayProxyResponse{
+		Body:       string(sessionJson),
+		StatusCode: 200,
+		Headers: map[string]string{
+			"Access-Control-Allow-Headers": "*",
+			"Access-Control-Allow-Origin":  "*",
+			"Access-Control-Allow-Methods": "OPTIONS,GET,POST",
+		},
+	}, nil
+}
+
+func handleGet(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	// create the dynamo client.
+	client := getClient()
 
 	// get the session data.
 	sessions, err := getSessions(client)
@@ -317,6 +360,8 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	switch request.HTTPMethod {
 	case http.MethodOptions:
 		return handleCors(request)
+	case http.MethodPost:
+		return handlePost(request)
 	case http.MethodGet:
 		return handleGet(request)
 	default:

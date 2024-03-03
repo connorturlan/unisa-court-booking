@@ -29,7 +29,8 @@ type BookingItem struct {
 }
 
 func getClient() *dynamodb.DynamoDB {
-	config := aws.NewConfig().WithRegion(region).WithEndpoint("http://dynamodb-local:8000")
+	config := aws.NewConfig().WithRegion(region)
+	// config := aws.NewConfig().WithRegion(region).WithEndpoint("http://dynamodb-local:8000")
 
 	session, err := session.NewSession()
 	if err != nil {
@@ -114,9 +115,9 @@ func pullItem(client *dynamodb.DynamoDB, uid string) (BookingItem, error) {
 		return BookingItem{}, nil
 	}
 
-	maybeSessions := *maybeItem.Item["sessions"].S
+	maybeBookings := *maybeItem.Item["sessions"].S
 	var session []string
-	err = json.Unmarshal([]byte(maybeSessions), &session)
+	err = json.Unmarshal([]byte(maybeBookings), &session)
 	if err != nil {
 		return BookingItem{}, err
 	}
@@ -147,7 +148,7 @@ func handleCors(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRe
 	}, nil
 }
 
-func handleGet(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func handlePut(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	// create the dynamo client.
 	client := getClient()
 
@@ -214,15 +215,15 @@ func handlePost(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRe
 
 	// process the body.
 	fmt.Println("unmarshalling body.")
-	var sessionsJson BookingItem
-	err := json.Unmarshal([]byte(request.Body), &sessionsJson)
+	var bookingJson BookingItem
+	err := json.Unmarshal([]byte(request.Body), &bookingJson)
 	if err != nil {
 		return respondWithStdErr(err)
 	}
 
 	// push the body to the database.
 	fmt.Println("pushing booking.")
-	pushItem(client, sessionsJson)
+	pushItem(client, bookingJson)
 
 	// return.
 	return events.APIGatewayProxyResponse{
@@ -241,8 +242,8 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 		return handleCors(request)
 	case http.MethodPost:
 		return handlePost(request)
-	case http.MethodGet:
-		return handleGet(request)
+	case http.MethodPut:
+		return handlePut(request)
 	default:
 		return events.APIGatewayProxyResponse{
 			StatusCode: 400,
