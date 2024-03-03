@@ -2,11 +2,11 @@ name: AWS SAM build and deploy
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths:
-      - aws/**
+  # push:
+  #   branches:
+  #     - main
+  #   paths:
+  #     - aws/**
 
 jobs:
   build-deploy:
