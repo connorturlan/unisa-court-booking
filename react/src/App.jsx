@@ -106,8 +106,11 @@ function App() {
                   any time, with the risk that there may not be availablity.
                 </i>
               </p>
+              <h3 className={styles.Info_Notice}>
+                Booking is currently closed until Monday 4th
+              </h3>
             </div>
-            <form onSubmit={onSubmit} className={styles.Form}>
+            <form onSubmit={onSubmit} className={styles.Form} disabled>
               <div className={styles.Form_Sections}>
                 {isLoading ? (
                   <h2 className={styles.Form_Sections}>Loading...</h2>
@@ -125,6 +128,7 @@ function App() {
                 className={styles.Form_Submit}
                 type="submit"
                 value="Reserve"
+                disabled
               />
             </form>
             <img className={styles.Info_Unisa} src="unisaSport.png" alt="" />
