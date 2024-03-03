@@ -286,6 +286,11 @@ func handleGet(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRes
 	return events.APIGatewayProxyResponse{
 		Body:       string(sessionJson),
 		StatusCode: 200,
+		Headers: map[string]string{
+			"Access-Control-Allow-Headers": "*",
+			"Access-Control-Allow-Origin":  "*",
+			"Access-Control-Allow-Methods": "OPTIONS,GET,POST",
+		},
 	}, nil
 }
 
