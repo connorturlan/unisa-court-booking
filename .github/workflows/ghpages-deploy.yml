@@ -1,4 +1,4 @@
-name: ghpages build and deploy
+name: ghpages
 
 on:
   workflow_dispatch:
